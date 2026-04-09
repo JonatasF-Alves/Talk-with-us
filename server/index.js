@@ -13,7 +13,7 @@ const app = express()
 app.use(express.static(path.join(__dirname, "public")))
 
 const expressServer = app.listen(PORT, () => {
-    console.log(`listening on port ${PORT}`)
+    console.log(`Servidor rodando na porta ${PORT}`)
 })
 
 const io = new Server(expressServer, {
@@ -23,10 +23,27 @@ const io = new Server(expressServer, {
 })
 
 io.on('connection', socket => {
-    console.log(`User ${socket.id} connected`)
+    console.log(`Usuario ${socket.id} conectado`)
 
-    socket.on('message', data => {
+    // bem vindo
+    socket.emit('mensagem', "Bem vindo ao chat!")
+
+    // quando um usuário se conecta
+    socket.broadcast.emit('mensagem', `Usuario ${socket.id.substring(0, 5)} conectou`)
+
+     
+    socket.on('mensagem', data => {
         console.log(data)
-        io.emit('message', `${socket.id.substring(0, 5)}: ${data}`)
+        io.emit('mensagem', `${socket.id.substring(0, 5)}: ${data}`)
+    })
+
+    // quando um usuário desconecta
+    socket.on('desconectado', () => {
+        socket.broadcast.emit('mensagem', `Usuario ${socket.id.substring(0, 5)} desconectou`)
+    })
+
+    
+    socket.on('atividade', (name) => {
+        socket.broadcast.emit('atividade', name)
     })
 })
